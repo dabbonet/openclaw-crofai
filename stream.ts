@@ -64,11 +64,28 @@ async function executeWithRetry(
   }
   if (!stream || typeof stream !== "object") return stream;
 
-  // Buffer all chunks
+  // Buffer all chunks and convert thinking blocks to visible text
   const chunks: unknown[] = [];
   try {
     for await (const chunk of stream) {
-      chunks.push(chunk);
+      // Convert thinking blocks to visible text blocks with marker
+      if (Array.isArray(chunk) && chunk.length > 0) {
+        const convertedChunk = chunk.map((block) => {
+          if (!block || typeof block !== "object") return block;
+          const record = block as Record<string, unknown>;
+          if (record.type === "thinking" && record.thinking && typeof record.thinking === "string") {
+            // Convert thinking block to text block with emoji marker
+            return {
+              type: "text",
+              text: `💭 ${record.thinking.trim()}`,
+            };
+          }
+          return block;
+        });
+        chunks.push(convertedChunk);
+      } else {
+        chunks.push(chunk);
+      }
     }
   } catch {
     // Stream error — return replay of what we got so far
@@ -106,6 +123,7 @@ export function wrapCrofProviderStream(
       return baseStreamFn(model, context, options);
     }
 
+    // Wrap the stream to convert thinking blocks to visible text blocks
     return executeWithRetry(baseStreamFn, model, context, options, 0);
   };
 }

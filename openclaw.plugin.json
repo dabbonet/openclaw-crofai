@@ -1,0 +1,28 @@
+{
+  "id": "crof",
+  "enabledByDefault": true,
+  "providers": ["crof"],
+  "providerAuthEnvVars": {
+    "crof": ["CROF_API_KEY"]
+  },
+  "providerAuthChoices": [
+    {
+      "provider": "crof",
+      "method": "api-key",
+      "choiceId": "crof",
+      "choiceLabel": "Crof.ai catalog",
+      "groupId": "crof",
+      "groupLabel": "Crof.ai",
+      "groupHint": "21+ models via crof.ai API",
+      "optionKey": "crofApiKey",
+      "cliFlag": "--crof-api-key",
+      "cliOption": "--crof-api-key <key>",
+      "cliDescription": "Crof.ai API key"
+    }
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

@@ -1,29 +1,31 @@
-import { CROF_DEFAULT_MODEL_REF } from "./provider-catalog";
+import {
+  applyAgentDefaultModelPrimary,
+  applyProviderConfigWithModelCatalog,
+  type OpenClawConfig,
+} from "openclaw/plugin-sdk/provider-onboard";
+import { buildCrofModelDefinition, CROF_BASE_URL, CROF_MODEL_CATALOG } from "./provider-catalog.js";
 
-/**
- * Apply Crof.ai configuration to provider config.
- * This function normalizes the base URL and applies Crof-specific settings.
- */
-export function applyCrofConfig(cfg: { baseUrl?: string; api?: string; apiKey?: string }): {
-  baseUrl?: string;
-  api?: string;
-  apiKey?: string;
-} {
-  // Normalize base URL to Crof.ai's endpoint
-  const normalizedBaseUrl = (cfg.baseUrl ?? "").trim().replace(/\/+$/, "");
-  if (normalizedBaseUrl && normalizedBaseUrl !== "https://crof.ai/v1") {
-    return {
-      ...cfg,
-      baseUrl: "https://crof.ai/v1",
-    };
-  }
-  
-  // Apply default model reference
-  return {
-    ...cfg,
-    ...CROF_DEFAULT_MODEL_REF,
-    provider: "crof",
+export const CROF_DEFAULT_MODEL_REF = "crof/deepseek-v4-pro";
+
+export function applyCrofProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+  const models = { ...cfg.agents?.defaults?.models };
+  models[CROF_DEFAULT_MODEL_REF] = {
+    ...models[CROF_DEFAULT_MODEL_REF],
+    alias: models[CROF_DEFAULT_MODEL_REF]?.alias ?? "Crof",
   };
+
+  return applyProviderConfigWithModelCatalog(cfg, {
+    agentModels: models,
+    providerId: "crof",
+    api: "openai-completions",
+    baseUrl: CROF_BASE_URL,
+    catalogModels: CROF_MODEL_CATALOG.map(buildCrofModelDefinition),
+  });
 }
 
-export const CROF_DEFAULT_MODEL_REF = CROF_DEFAULT_MODEL_REF;
+export function applyCrofConfig(cfg: OpenClawConfig): OpenClawConfig {
+  return applyAgentDefaultModelPrimary(
+    applyCrofProviderConfig(cfg),
+    CROF_DEFAULT_MODEL_REF,
+  );
+}

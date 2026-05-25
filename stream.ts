@@ -124,6 +124,7 @@ export function wrapCrofProviderStream(
     }
 
     // Wrap the stream to convert thinking blocks to visible text blocks
+    // This enables Discord to render the thinking process instead of just the final answer
     return executeWithRetry(baseStreamFn, model, context, options, 0);
   };
 }
